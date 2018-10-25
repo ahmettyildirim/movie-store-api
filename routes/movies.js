@@ -8,7 +8,19 @@ const Movie = require('../models/Movie');
 
 
 router.get('/', (req, res) => {
-   const promise = Movie.find({ });
+   const promise = Movie.aggregate([
+       {
+           $lookup: {
+               from: 'directors',
+               localField: 'director_id',
+               foreignField: '_id',
+               as: 'direct'
+           }
+       },
+        {
+            $unwind:'$direct'
+        }
+   ]);
    promise.then((data) => {
        res.json(data);
    }).catch((err) => {
@@ -92,14 +104,11 @@ router.delete('/:movie_id', (req, res, next) => {
     });
 });
 router.post('/', (req, res, next) => {
-  const { title, imdb_score,country, category,year} = req.body;
-
-
+  const { title, imdb_score,country, category,year, director_id} = req.body;
   const movie = new Movie(req.body);
-
   const promise = movie.save();
   promise.then((data) => {
-      res.json({status: 1});
+      res.json(data);
   }).catch((err) => {
       res.json(err);
   })
