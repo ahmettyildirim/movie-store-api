@@ -1,3 +1,4 @@
+[![Build Status](https://api.travis-ci.org/ahmettyildirim/movie-store-api.svg?branch=master)](https://travis-ci.org/ahmettyildirim/movie-store-api)
 
 # node-movie-api
 
