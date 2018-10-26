@@ -2,46 +2,50 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const should = chai.should();
 const server = require('../../app');
-
 chai.use(chaiHttp);
-let token;
-let movie_id;
+
+let token, movieId;
+
 describe('/api/movies tests', () => {
     before((done) => {
         chai.request(server)
             .post('/authenticate')
-            .send({username: 'ahmety', password: '12345' })
-            .end((err,res) => {
-                token=res.body.token;
+            .send({username: 'ahmety', password: '12345'})
+            .end((err, res) => {
+                token = res.body.token;
+                console.log('**********************************************************');
+                console.log(res);
+                console.log('**********************************************************');
                 done();
-            })
+            });
     });
 
     describe('/GET movies', () => {
-        it('it should get all movies', (done) => {
+        it('it should GET all the movies', (done) => {
             chai.request(server)
                 .get('/api/movies')
                 .set('x-access-token', token)
                 .end((err, res) => {
                     res.should.have.status(200);
                     res.body.should.be.a('array');
-                })
-            done();
-        });
-    })
+                    done();
+                });
+        })
+    });
 
-    describe('/POST one movie', () => {
-        it('it should POST a movies', (done) => {
-            const movie ={
-                title: 'example',
-                director_id:'5bd0c7e70b1a05227465c714',
-                category: 'Comics',
-                country: 'Turkey',
-                year: 2012,
-                imdb_score: 7
-            }
+    describe('/POST movie', () => {
+        it('it should POST a movie', (done) => {
+            const movie = {
+                title: 'Udemy',
+                director_id: '5a34e1afb8523a78631f8540',
+                category: 'Komedi',
+                country: 'Türkiye',
+                year: 1950,
+                imdb_score: 8
+            };
+
             chai.request(server)
-                .post('/api/movies/')
+                .post('/api/movies')
                 .send(movie)
                 .set('x-access-token', token)
                 .end((err, res) => {
@@ -52,21 +56,17 @@ describe('/api/movies tests', () => {
                     res.body.should.have.property('category');
                     res.body.should.have.property('country');
                     res.body.should.have.property('year');
-                    movie_id = res.body._id;
+                    res.body.should.have.property('imdb_score');
+                    movieId = res.body._id;
                     done();
-                })
+                });
         });
-    })
+    });
 
     describe('/GET/:movie_id movie', () => {
-        console.log('*---------------------------------****');
-        console.log( movie_id);
-        console.log('*---------------------------------****');
-        it('it should get a movie by the given id', (done) => {
-            console.log('************************************************');
-            console.log(movie_id);
+        it('it should GET a movie by the given id', (done) => {
             chai.request(server)
-                .get('/api/movies/' + movie_id)
+                .get('/api/movies/' + movieId)
                 .set('x-access-token', token)
                 .end((err, res) => {
                     res.should.have.status(200);
@@ -76,24 +76,26 @@ describe('/api/movies tests', () => {
                     res.body.should.have.property('category');
                     res.body.should.have.property('country');
                     res.body.should.have.property('year');
-                    res.body.should.have.property('_id').eql(movie_id);
+                    res.body.should.have.property('imdb_score');
+                    res.body.should.have.property('_id').eql(movieId);
                     done();
-                })
+                });
         });
-    })
+    });
 
-    describe('/PUT a movie', () => {
-        it('it should update a movies', (done) => {
-            const movie ={
-                title: 'example 2 3',
-                director_id:'5bd0c7e70b1a05227465c714',
-                category: 'Comics',
-                country: 'Turkey',
-                year: 2012,
-                imdb_score: 7
-            }
+    describe('/PUT/:movie_id movie', () => {
+        it('it should UPDATE a movie given by id', (done) => {
+            const movie = {
+                title: '93creative',
+                director_id: '5a34e1afb8523a78631f8541',
+                category: 'Suç',
+                country: 'Fransa',
+                year: 1970,
+                imdb_score: 9
+            };
+
             chai.request(server)
-                .put('/api/movies/' + movie_id)
+                .put('/api/movies/' + movieId)
                 .send(movie)
                 .set('x-access-token', token)
                 .end((err, res) => {
@@ -104,23 +106,24 @@ describe('/api/movies tests', () => {
                     res.body.should.have.property('category').eql(movie.category);
                     res.body.should.have.property('country').eql(movie.country);
                     res.body.should.have.property('year').eql(movie.year);
-                    done();
-                })
-        });
-    })
-    describe('/DELETE a movie', () => {
-        it('it should delete a movie', (done) => {
+                    res.body.should.have.property('imdb_score').eql(movie.imdb_score);
 
+                    done();
+                });
+        });
+    });
+
+    describe('/DELETE/:movie_id movie', () => {
+        it('it should DELETE a movie given by id', (done) => {
             chai.request(server)
-                .delete('/api/movies/' + movie_id)
+                .delete('/api/movies/' + movieId)
                 .set('x-access-token', token)
                 .end((err, res) => {
                     res.should.have.status(200);
                     res.body.should.be.a('object');
                     res.body.should.have.property('status').eql(1);
                     done();
-                })
+                });
         });
-    })
-
+    });
 });
